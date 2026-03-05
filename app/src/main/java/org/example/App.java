@@ -3,18 +3,25 @@
  */
 package org.example;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URI;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Path;
+
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 
 public class App {
-    public String getGreeting() {
-        return "Hello World! :)";
-    }
+    public static void main(String[] args) throws IOException, InterruptedException {
+        InputStream is = App.class.getResourceAsStream("/run.html");
+        Path tmpf = Files.createTempFile("inf-run", ".html");
+        Files.write(tmpf, is.readAllBytes());
 
-    public static void main(String[] args) {
         WebDriver driver = new ChromeDriver();
-        driver.get("https://faretek.dev");
+        driver.get(tmpf.toUri().toString());
+        Thread.sleep(10000);
         driver.quit();
-        System.out.println(new App().getGreeting());
     }
 }

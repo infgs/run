@@ -9,11 +9,22 @@ plugins {
     // Apply the application plugin to add support for building a CLI application in Java.
     application
     java
+    id("com.gradleup.shadow") version "9.3.2"  // enables fat-jar files; i.e. contains all dependencies
 }
 
 group = "dev.selenium"
 version = "1.0-SNAPSHOT"
 val seleniumVersion = System.getProperty("selenium.version") ?: "4.41.0"
+
+tasks.jar {
+    manifest {
+        attributes(
+            "Implementation-Title" to "Gradle",
+            "Implementation-Version" to archiveVersion,
+            "Main-Class" to "org.example.App"
+        )
+    }
+}
 
 repositories {
     // Use Maven Central for resolving dependencies.
