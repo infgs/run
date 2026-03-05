@@ -12,14 +12,20 @@ import java.nio.file.Path;
 
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.chrome.ChromeOptions;
 
 public class App {
     public static void main(String[] args) throws IOException, InterruptedException {
+        boolean headless = true;
+        ChromeOptions options = new ChromeOptions();
+        if (headless)
+            options.addArguments("--headless");
+
         InputStream is = App.class.getResourceAsStream("/run.html");
         Path tmpf = Files.createTempFile("inf-run", ".html");
         Files.write(tmpf, is.readAllBytes());
 
-        WebDriver driver = new ChromeDriver();
+        WebDriver driver = new ChromeDriver(options);
         driver.get(tmpf.toUri().toString());
         Thread.sleep(10000);
         driver.quit();
