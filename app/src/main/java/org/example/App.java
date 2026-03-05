@@ -3,11 +3,8 @@
  */
 package org.example;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URI;
-import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -22,6 +19,7 @@ public class App {
         if (args.length != 2 || !args[0].equals("run")) {
             System.out.println("Bad arguments");
             return; // TODO: implement acutal parsing of args and dispatch to other functions
+                    // (getopts)
         }
         int timeout = 1;
         String cloudHost = "wss://clouddata.turbowarp.org";
