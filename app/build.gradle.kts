@@ -48,6 +48,12 @@ dependencies {
     implementation("com.titusfortner:selenium-logger:2.4.0")
 }
 
+tasks.withType<JavaExec> {
+    // This sets the working directory of the JVM to the 
+    // directory where you launched the gradle command.
+    workingDir = File(System.getProperty("user.dir"))
+}
+
 // Apply a specific Java toolchain to ease working on different environments.
 java {
     toolchain {

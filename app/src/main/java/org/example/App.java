@@ -3,12 +3,15 @@
  */
 package org.example;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Base64;
 
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
@@ -16,18 +19,44 @@ import org.openqa.selenium.chrome.ChromeOptions;
 
 public class App {
     public static void main(String[] args) throws IOException, InterruptedException {
-        boolean headless = true;
+        if (args.length != 2 || !args[0].equals("run")) {
+            System.out.println("Bad arguments");
+            return; // TODO: implement acutal parsing of args and dispatch to other functions
+        }
+        int timeout = 1;
+        String cloudHost = "wss://clouddata.turbowarp.org";
+        String projectId = "104";
+        String username = "player";
+
+        System.out.println("Looking for files in: " + System.getProperty("user.dir"));
+        Path project = Paths.get(args[1]);
+        String projectData = Base64.getUrlEncoder().encodeToString(Files.readAllBytes(project));
+
+        boolean headless = false;
         ChromeOptions options = new ChromeOptions();
-        if (headless)
+        if (headless) {
             options.addArguments("--headless");
+            options.addArguments("--disable-gpu"); // Recommended for headless execution according to g4g
+        }
 
-        InputStream is = App.class.getResourceAsStream("/run.html");
-        Path tmpf = Files.createTempFile("inf-run", ".html");
-        Files.write(tmpf, is.readAllBytes());
+        // tmpfiles
+        Path workdir = Files.createTempDirectory("inf-run");
+        Path runPath = workdir.resolve("./run.html");
+        Path scaffoldingPath = workdir.resolve("./scaffolding-with-music.js");
 
+        InputStream runIs = App.class.getResourceAsStream("/run.html");
+        InputStream scaffoldingIs = App.class.getResourceAsStream("/scaffolding-with-music.js");
+        Files.write(runPath, runIs.readAllBytes());
+        Files.write(scaffoldingPath, scaffoldingIs.readAllBytes());
+
+        // run
         WebDriver driver = new ChromeDriver(options);
-        driver.get(tmpf.toUri().toString());
-        Thread.sleep(10000);
+        driver.get(runPath.toUri().toString() +
+                "?project=" + projectData +
+                "&timeout=" + timeout +
+                "&cloud_host=" + cloudHost +
+                "&username=" + username); // TODO: escape these strings
+        Thread.sleep(1000000000);
         driver.quit();
     }
 }
