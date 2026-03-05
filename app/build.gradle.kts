@@ -8,7 +8,12 @@
 plugins {
     // Apply the application plugin to add support for building a CLI application in Java.
     application
+    java
 }
+
+group = "dev.selenium"
+version = "1.0-SNAPSHOT"
+val seleniumVersion = System.getProperty("selenium.version") ?: "4.41.0"
 
 repositories {
     // Use Maven Central for resolving dependencies.
@@ -23,6 +28,13 @@ dependencies {
 
     // This dependency is used by the application.
     implementation(libs.guava)
+
+    implementation("org.seleniumhq.selenium:selenium-java:$seleniumVersion")
+    implementation("org.seleniumhq.selenium:selenium-grid:$seleniumVersion")
+    implementation(platform("org.junit:junit-bom:6.0.2"))
+    implementation("org.junit.jupiter:junit-jupiter-engine")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+    implementation("com.titusfortner:selenium-logger:2.4.0")
 }
 
 // Apply a specific Java toolchain to ease working on different environments.
@@ -41,3 +53,4 @@ tasks.named<Test>("test") {
     // Use JUnit Platform for unit tests.
     useJUnitPlatform()
 }
+
