@@ -72,8 +72,8 @@ public class App {
 
         // index of next message
         int output_i = 0;
-        Optional<Integer> exit_code = Optional.ofNullable(null);
-        while (exit_code.isEmpty()) {
+        Optional<Integer> exitCode = Optional.ofNullable(null);
+        while (exitCode.isEmpty()) {
             // stdout
             List<Map<String, String>> result = null;
             Object output = null;
@@ -92,35 +92,9 @@ public class App {
                     Map<String, String> msg = result.get(output_i);
                     String mtype = msg.get("type");
                     String content = msg.get("content");
-                    switch (mtype) {
-                        case "log":
-                            System.out.println("Log: " + content);
-                            break;
-                        case "warn":
-                            System.out.println("Warn: " + content);
-                            break;
-                        case "error":
-                            System.out.println("Error: " + content);
-                            break;
-                        case "breakpoint":
-                            System.out.println("Breakpoint");
-                            break;
-                        case "say":
-                            System.out.println("Say: " + content);
-                            break;
-                        case "think":
-                            System.out.println("Think: " + content);
-                            break;
-                        case "did_not_run":
-                            System.out.println("DNR: " + content);
-                            break;
-                        case "exit_code":
-                            exit_code = Optional.of(Integer.valueOf(content));
-                            break;
-                        default:
-                            System.out.println("Unknown message type " + mtype + " with content: " + content);
-                            break;
-                    }
+                    Optional<Integer> code = App.outputMsgAndGetStatusCode(mtype, content);
+                    if (code.isPresent())
+                        exitCode = code;
                     output_i++;
                 }
             }
@@ -135,8 +109,40 @@ public class App {
             }
             Thread.sleep(10);
         }
-        System.out.println("Exited with code " + exit_code.orElse(Integer.valueOf(-1)));
+        System.out.println("Exited with code " + exitCode.orElse(Integer.valueOf(-1)));
         scanner.close();
         driver.quit();
+    }
+
+    private static Optional<Integer> outputMsgAndGetStatusCode(String mtype, String content) {
+        switch (mtype) {
+            case "log":
+                System.out.println("Log: " + content);
+                break;
+            case "warn":
+                System.out.println("Warn: " + content);
+                break;
+            case "error":
+                System.out.println("Error: " + content);
+                break;
+            case "breakpoint":
+                System.out.println("Breakpoint");
+                break;
+            case "say":
+                System.out.println("Say: " + content);
+                break;
+            case "think":
+                System.out.println("Think: " + content);
+                break;
+            case "did_not_run":
+                System.out.println("DNR: " + content);
+                break;
+            case "exit_code":
+                return Optional.of(Integer.valueOf(content));
+            default:
+                System.out.println("Unknown message type " + mtype + " with content: " + content);
+                break;
+        }
+        return Optional.ofNullable(null);
     }
 }
