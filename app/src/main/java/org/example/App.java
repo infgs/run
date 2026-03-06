@@ -9,19 +9,25 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Base64;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
+import org.openqa.selenium.By;
+import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 
 public class App {
+    @SuppressWarnings("unchecked")
     public static void main(String[] args) throws IOException, InterruptedException {
         if (args.length != 2 || !args[0].equals("run")) {
             System.out.println("Bad arguments");
             return; // TODO: implement acutal parsing of args and dispatch to other functions
                     // (getopts)
         }
-        int timeout = 1;
+        int timeout = 1000;
         String cloudHost = "wss://clouddata.turbowarp.org";
         String projectId = "104";
         String username = "player";
@@ -49,12 +55,69 @@ public class App {
 
         // run
         WebDriver driver = new ChromeDriver(options);
+        JavascriptExecutor js = (JavascriptExecutor) driver;
         driver.get(runPath.toUri().toString() +
                 "?project=" + projectData +
                 "&timeout=" + timeout +
                 "&cloud_host=" + cloudHost +
+                "&project_id=" + projectId +
                 "&username=" + username); // TODO: escape these strings
-        Thread.sleep(1000000000);
+        System.out.println("waiting");
+        driver.findElement(By.cssSelector("#project"));
+        System.out.println("ready");
+
+        // index of next message
+        int output_i = 0;
+        Optional<Integer> exit_code = Optional.ofNullable(null);
+        while (exit_code.isEmpty()) {
+            Object output = js.executeScript("return output;");
+            List<Map<String, String>> result = null;
+
+            try {
+                result = (List<Map<String, String>>) output;
+            } catch (ClassCastException e) {
+            }
+            if (result != null) {
+                int n = result.size();
+                while (n > output_i) {
+                    Map<String, String> msg = result.get(output_i);
+                    String mtype = msg.get("type");
+                    String content = msg.get("content");
+                    switch (mtype) {
+                        case "log":
+                            System.out.println("Log: " + content);
+                            break;
+                        case "warn":
+                            System.out.println("Warn: " + content);
+                            break;
+                        case "error":
+                            System.out.println("Error: " + content);
+                            break;
+                        case "breakpoint":
+                            System.out.println("Breakpoint");
+                            break;
+                        case "say":
+                            System.out.println("Say: " + content);
+                            break;
+                        case "think":
+                            System.out.println("Think: " + content);
+                            break;
+                        case "did_not_run":
+                            System.out.println("DNR: " + content);
+                            break;
+                        case "exit_code":
+                            exit_code = Optional.of(Integer.valueOf(content));
+                            break;
+                        default:
+                            System.out.println("Unknown message type " + mtype + " with content: " + content);
+                            break;
+                    }
+                    output_i++;
+                }
+            }
+        }
+        System.out.println("Exited with code " + exit_code.orElse(Integer.valueOf(-1)));
+
         driver.quit();
     }
 }
