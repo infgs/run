@@ -12,10 +12,13 @@ import java.util.Base64;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Scanner;
 
 import org.openqa.selenium.By;
+import org.openqa.selenium.JavascriptException;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 
@@ -31,16 +34,17 @@ public class App {
         String cloudHost = "wss://clouddata.turbowarp.org";
         String projectId = "104";
         String username = "player";
+        Scanner scanner = new Scanner(System.in);
 
         System.out.println("Looking for files in: " + System.getProperty("user.dir"));
         Path project = Paths.get(args[1]);
         String projectData = Base64.getUrlEncoder().encodeToString(Files.readAllBytes(project));
 
-        boolean headless = false;
+        boolean headless = true;
         ChromeOptions options = new ChromeOptions();
         if (headless) {
             options.addArguments("--headless");
-            options.addArguments("--disable-gpu"); // Recommended for headless execution according to g4g
+            options.addArguments("--window-size=1920,1080");
         }
 
         // tmpfiles
@@ -70,8 +74,13 @@ public class App {
         int output_i = 0;
         Optional<Integer> exit_code = Optional.ofNullable(null);
         while (exit_code.isEmpty()) {
-            Object output = js.executeScript("return output;");
+            // stdout
             List<Map<String, String>> result = null;
+            Object output = null;
+            try {
+                output = js.executeScript("return output;");
+            } catch (JavascriptException e) {
+            }
 
             try {
                 result = (List<Map<String, String>>) output;
@@ -115,9 +124,19 @@ public class App {
                     output_i++;
                 }
             }
+
+            // stdin
+            // detect ask and wait ui
+            List<WebElement> elems = driver.findElements(By.cssSelector(".sc-question-input"));
+            if (elems.size() > 0) {
+                WebElement inputField = elems.getFirst();
+                System.out.println("> ");
+                inputField.sendKeys(scanner.nextLine() + "\n");
+            }
+            Thread.sleep(10);
         }
         System.out.println("Exited with code " + exit_code.orElse(Integer.valueOf(-1)));
-
+        scanner.close();
         driver.quit();
     }
 }
