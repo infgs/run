@@ -1,7 +1,11 @@
 # run
 inf-run
 
-I literally have never used java for more than small school tasks.
-So I have no idea how the tooling actually is used (e.g. gradle).
-This project is basically me familiarising with Java.
-Maybe I will change it later so it works with the tooling.
+## Why java & selenium?
+
+1. selenium is more cross platform than playwright
+2. I need to learn java
+
+I do not enjoy java, nor am i any good at it. But I find it necessary to learn for various reasons outside of my control.
+It is like the societal lock-in of services that we are forced to use, though maybe not quite that bad.
+
